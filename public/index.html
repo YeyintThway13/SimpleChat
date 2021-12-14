@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        background-color: #05513e;
+        display: flex;
+        width: 100vw;
+        height: 100vh;
+        justify-content: center;
+        align-items: center;
+      }
+      .mainDiv {
+        background-color: white;
+        display: flex;
+        flex-direction: column;
+        padding: 20px 25px;
+        width: 700px;
+      }
+      h1 {
+        text-transform: uppercase;
+        margin-bottom: 15px;
+      }
+      .sendBox {
+        display: flex;
+        width: 100%;
+      }
+
+      input{
+          width: 100%;
+          padding: 10px 20px;
+      }
+      input:focus{
+          outline:none
+      }
+      button {
+        margin-left: 10px;
+        background-color: teal;
+        border: none;
+        color: #fff;
+        padding: 0 15px;
+        cursor: pointer;
+      }
+
+      .messageBox{
+          height: 300px;
+          overflow-y: scroll;
+          margin-bottom: 15px;
+      }
+
+      .message{
+          display: flex;
+          margin: 10px 0;
+      }
+
+      .userName{
+          font-weight: bold;
+          margin-right: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="mainDiv">
+      <h1 id="head">YCI Chat App</h1>
+      <div class="messageBox">
+      </div>
+      <div class="typing">
+
+      </div>
+      <div class="sendBox">
+        <input
+          name="message"
+          id="msgInput"
+          placeholder="What do u want to say?"
+        ></input>
+        <button    id="send">Send</button>
+      </div>
+    </div>
+  </body>
+  <script
+    src="https://cdn.socket.io/4.4.0/socket.io.min.js"
+    integrity="sha384-1fOn6VtTq3PWwfsOrk45LnYcGosJwzMHv+Xh/Jx5303FVOXzEnw0EpLv30mtjmlj"
+    crossorigin="anonymous"
+  ></script>
+  <script>
+    const name = window.prompt("What is your name?");
+    const head = document.querySelector("#head")
+
+    head.innerText = `Yci chat app ${name}`
+
+    const message = document.querySelector("#msgInput")
+    const msgBox = document.querySelector(".messageBox")
+    const typing = document.querySelector(".typing")
+    const sendBtn = document.querySelector("#send")
+    const socket = io("http://localhost:3000");
+
+    sendBtn.addEventListener("click" , ()=>{
+        if(message.value){
+            socket.emit("message" , {name , message : message.value})
+            
+            message.value = ""
+        }
+    })
+
+    message.addEventListener("keypress" , ()=>{
+        socket.emit("type" , name)
+    } )
+
+    socket.on("rMessage" , (data)=>{
+        msgBox.innerHTML += `<div class="message"> <p class="userName">${data.name} :</p> <p class="messageText">${data.message}</p> </div>`
+    })
+
+    socket.on("rType" , (data)=>{
+        typing.innerHTML = `<p>${data} is typing ........ </p>`
+
+        setTimeout(()=>{
+            typing.innerHTML = ""
+        } , 1500)
+    })
+  </script>
+</html>
